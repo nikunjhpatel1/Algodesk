@@ -997,8 +997,7 @@ async function fetchQuote(symbol) {
     if (!meta) return null;
     const price    = meta.regularMarketPrice;
     const prev     = meta.chartPreviousClose || meta.previousClose || price;
-    const changePct = ((price - prev) / prev * 100);
-    return {
+const changePct = meta.regularMarketChangePercent || ((price - prev) / prev * 100);    return {
       price: price.toLocaleString('en-IN', {maximumFractionDigits: 2}),
       chg:   (changePct >= 0 ? '+' : '') + changePct.toFixed(2) + '%',
       up:    changePct >= 0
