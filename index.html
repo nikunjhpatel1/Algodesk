@@ -1210,17 +1210,45 @@ function saveStrategy() {
 // ════════════════════════════════════════════════════════════════
 //  BACKTESTER
 // ════════════════════════════════════════════════════════════════
-function runBacktest() {
+async function runBacktest() {
   document.getElementById('bt-loading').classList.add('show');
   document.getElementById('bt-results').style.display = 'none';
   if (btChartInst) { btChartInst.destroy(); btChartInst = null; }
-  setTimeout(() => {
+
+  const symbol   = document.getElementById('bt-symbol').value   || 'RELIANCE.NS';
+  const strategy = document.getElementById('bt-strategy').value || 'RSI Reversal';
+  const from     = document.getElementById('bt-from').value     || '2023-01-01';
+  const to       = document.getElementById('bt-to').value       || '2023-12-31';
+  const capital  = document.getElementById('bt-capital').value  || 100000;
+
+  try {
+    const res  = await fetch('https://web-production-620dd.up.railway.app/backtest', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ symbol, strategy, from_date: from, to_date: to, capital })
+    });
+    const data = await res.json();
+
+    if (data.error) throw new Error(data.error);
+
+    // Update result cards
+    document.getElementById('bt-return').textContent    = (data.net_return >= 0 ? '+' : '') + data.net_return + '%';
+    document.getElementById('bt-drawdown').textContent  = '-' + data.max_drawdown + '%';
+    document.getElementById('bt-winrate').textContent   = data.win_rate + '%';
+    document.getElementById('bt-sharpe').textContent    = data.sharpe;
+    document.getElementById('bt-total').textContent     = data.total_trades;
+    document.getElementById('bt-winners').textContent   = data.won;
+    document.getElementById('bt-losers').textContent    = data.lost;
+
     document.getElementById('bt-loading').classList.remove('show');
     document.getElementById('bt-results').style.display = 'block';
-    renderTradeLog();
     initBtChart();
     document.getElementById('bt-results').scrollIntoView({ behavior:'smooth' });
-  }, 2200);
+
+  } catch(err) {
+    document.getElementById('bt-loading').classList.remove('show');
+    alert('Backtest error: ' + err.message);
+  }
 }
 
 function renderTradeLog() {
