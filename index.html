@@ -705,7 +705,7 @@
         <div class="form-row">
           <div class="form-group">
             <label>Strategy</label>
-            <select>
+            <select id="bt-strategy">
               <option>RSI Reversal</option><option>MACD Crossover</option>
               <option>Supertrend</option><option>Bollinger Bounce</option>
             </select>
@@ -728,7 +728,7 @@
         <div class="form-row">
           <div class="form-group">
             <label>Initial Capital (₹)</label>
-            <input type="number" value="100000">
+            <input type="number" id="bt-capital" value="100000">
           </div>
           <div class="form-group">
             <label>Brokerage / Commission (%)</label>
@@ -745,10 +745,10 @@
       <!-- Results (hidden until backtest runs) -->
       <div id="bt-results" style="display:none">
         <div class="grid-4 mb-14">
-          <div class="stat"><div class="stat-label">Net Return</div><div class="stat-value up">+24.7%</div><div class="stat-sub up">₹24,700 profit</div></div>
-          <div class="stat"><div class="stat-label">Max Drawdown</div><div class="stat-value down">-8.2%</div><div class="stat-sub down">Worst peak-to-trough dip</div></div>
-          <div class="stat"><div class="stat-label">Win Rate</div><div class="stat-value">64%</div><div class="stat-sub neu">48 wins · 27 losses</div></div>
-          <div class="stat"><div class="stat-label">Sharpe Ratio</div><div class="stat-value">1.42</div><div class="stat-sub up">Good risk-adjusted return</div></div>
+          <div class="stat"><div class="stat-label">Net Return</div><div class="stat-value up" id="bt-return">+24.7%</div><div class="stat-sub up">profit on capital</div></div>
+          <div class="stat"><div class="stat-label">Max Drawdown</div><div class="stat-value down" id="bt-drawdown">-8.2%</div><div class="stat-sub down">Worst peak-to-trough dip</div></div>
+          <div class="stat"><div class="stat-label">Win Rate</div><div class="stat-value" id="bt-winrate">64%</div><div class="stat-sub neu"><span id="bt-winners">48</span> wins · <span id="bt-losers">27</span> losses</div></div>
+          <div class="stat"><div class="stat-label">Sharpe Ratio</div><div class="stat-value" id="bt-sharpe">1.42</div><div class="stat-sub up">Risk-adjusted return</div></div>
         </div>
 
         <div class="grid-2 mb-14">
@@ -759,9 +759,9 @@
           <div class="card">
             <div class="card-title">Performance Breakdown</div>
             <div class="grid-3" style="border-top:1px solid var(--border);padding-top:12px">
-              <div class="result-metric"><div class="val">75</div><div class="lbl">Total Trades</div></div>
-              <div class="result-metric"><div class="val up">48</div><div class="lbl">Winners</div></div>
-              <div class="result-metric"><div class="val down">27</div><div class="lbl">Losers</div></div>
+              <div class="result-metric"><div class="val" id="bt-total">75</div><div class="lbl">Total Trades</div></div>
+              <div class="result-metric"><div class="val up" id="bt-won">48</div><div class="lbl">Winners</div></div>
+              <div class="result-metric"><div class="val down" id="bt-lost">27</div><div class="lbl">Losers</div></div>
               <div class="result-metric"><div class="val">2.3×</div><div class="lbl">Profit Factor</div></div>
               <div class="result-metric"><div class="val">3.2%</div><div class="lbl">Avg Win</div></div>
               <div class="result-metric"><div class="val down">1.4%</div><div class="lbl">Avg Loss</div></div>
@@ -997,7 +997,8 @@ async function fetchQuote(symbol) {
     if (!meta) return null;
     const price    = meta.regularMarketPrice;
     const prev     = meta.chartPreviousClose || meta.previousClose || price;
-const changePct = meta.regularMarketChangePercent || ((price - prev) / prev * 100);    return {
+    const changePct = ((price - prev) / prev * 100);
+    return {
       price: price.toLocaleString('en-IN', {maximumFractionDigits: 2}),
       chg:   (changePct >= 0 ? '+' : '') + changePct.toFixed(2) + '%',
       up:    changePct >= 0
@@ -1228,20 +1229,21 @@ async function runBacktest() {
       body: JSON.stringify({ symbol, strategy, from_date: from, to_date: to, capital })
     });
     const data = await res.json();
-
     if (data.error) throw new Error(data.error);
 
-    // Update result cards
-    document.getElementById('bt-return').textContent    = (data.net_return >= 0 ? '+' : '') + data.net_return + '%';
-    document.getElementById('bt-drawdown').textContent  = '-' + data.max_drawdown + '%';
-    document.getElementById('bt-winrate').textContent   = data.win_rate + '%';
-    document.getElementById('bt-sharpe').textContent    = data.sharpe;
-    document.getElementById('bt-total').textContent     = data.total_trades;
-    document.getElementById('bt-winners').textContent   = data.won;
-    document.getElementById('bt-losers').textContent    = data.lost;
+    document.getElementById('bt-return').textContent   = (data.net_return >= 0 ? '+' : '') + data.net_return + '%';
+    document.getElementById('bt-drawdown').textContent = '-' + data.max_drawdown + '%';
+    document.getElementById('bt-winrate').textContent  = data.win_rate + '%';
+    document.getElementById('bt-sharpe').textContent   = data.sharpe;
+    document.getElementById('bt-total').textContent    = data.total_trades;
+    document.getElementById('bt-won').textContent      = data.won;
+    document.getElementById('bt-lost').textContent     = data.lost;
+    document.getElementById('bt-winners').textContent  = data.won;
+    document.getElementById('bt-losers').textContent   = data.lost;
 
     document.getElementById('bt-loading').classList.remove('show');
     document.getElementById('bt-results').style.display = 'block';
+    renderTradeLog();
     initBtChart();
     document.getElementById('bt-results').scrollIntoView({ behavior:'smooth' });
 
