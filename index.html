@@ -930,61 +930,124 @@ let feedInterval   = null;
 let btChartInst    = null;
 
 // ────────────────────────────────────────────────────────────────
-//  MARKET DATA
+//  MARKET DATA  (prices filled by fetchAllPrices)
 // ────────────────────────────────────────────────────────────────
 const MARKETS = {
   india: {
     subtitle: 'Indian Markets · NSE/BSE', currency: '₹',
     portVal: '₹2,45,820', portChg: '▲ +₹3,240 today', pnl: '+₹3,240',
     indices: [
-      {name:'NIFTY 50',   val:'22,475.85', chg:'+1.2%', up:true},
-      {name:'SENSEX',     val:'74,119.40', chg:'+1.1%', up:true},
-      {name:'BANK NIFTY', val:'48,320.15', chg:'-0.3%', up:false},
-      {name:'NIFTY IT',   val:'35,980.50', chg:'+2.1%', up:true},
+      {name:'NIFTY 50',   symbol:'^NSEI',    val:'…', chg:'…', up:true},
+      {name:'SENSEX',     symbol:'^BSESN',   val:'…', chg:'…', up:true},
+      {name:'BANK NIFTY', symbol:'^NSEBANK', val:'…', chg:'…', up:true},
+      {name:'NIFTY IT',   symbol:'^CNXIT',   val:'…', chg:'…', up:true},
     ],
     stocks: [
-      {name:'RELIANCE', sub:'NSE', price:'2,487.55', chg:'+1.8%', up:true},
-      {name:'TCS',      sub:'NSE', price:'3,720.30', chg:'+0.9%', up:true},
-      {name:'HDFC BANK',sub:'NSE', price:'1,540.10', chg:'-0.4%', up:false},
-      {name:'INFOSYS',  sub:'NSE', price:'1,432.75', chg:'+2.3%', up:true},
-      {name:'WIPRO',    sub:'NSE', price:'458.90',   chg:'+1.1%', up:true},
+      {name:'RELIANCE', sub:'NSE', symbol:'RELIANCE.NS', price:'…', chg:'…', up:true},
+      {name:'TCS',      sub:'NSE', symbol:'TCS.NS',      price:'…', chg:'…', up:true},
+      {name:'HDFC BANK',sub:'NSE', symbol:'HDFCBANK.NS', price:'…', chg:'…', up:true},
+      {name:'INFOSYS',  sub:'NSE', symbol:'INFY.NS',     price:'…', chg:'…', up:true},
+      {name:'WIPRO',    sub:'NSE', symbol:'WIPRO.NS',    price:'…', chg:'…', up:true},
     ]
   },
   us: {
     subtitle: 'US Markets · NYSE/NASDAQ', currency: '$',
     portVal: '$2,981', portChg: '▲ +$39 today', pnl: '+$39',
     indices: [
-      {name:'S&P 500',   val:'5,248.34',  chg:'+0.8%', up:true},
-      {name:'NASDAQ',    val:'16,428.82', chg:'+1.4%', up:true},
-      {name:'DOW JONES', val:'38,905.12', chg:'+0.2%', up:true},
-      {name:'VIX',       val:'14.82',     chg:'-3.1%', up:false},
+      {name:'S&P 500',   symbol:'^GSPC',  val:'…', chg:'…', up:true},
+      {name:'NASDAQ',    symbol:'^IXIC',  val:'…', chg:'…', up:true},
+      {name:'DOW JONES', symbol:'^DJI',   val:'…', chg:'…', up:true},
+      {name:'VIX',       symbol:'^VIX',   val:'…', chg:'…', up:true},
     ],
     stocks: [
-      {name:'AAPL', sub:'NASDAQ', price:'182.52', chg:'+1.2%', up:true},
-      {name:'MSFT', sub:'NASDAQ', price:'415.80', chg:'+0.7%', up:true},
-      {name:'GOOGL',sub:'NASDAQ', price:'172.34', chg:'-0.3%', up:false},
-      {name:'NVDA', sub:'NASDAQ', price:'879.40', chg:'+3.8%', up:true},
-      {name:'TSLA', sub:'NASDAQ', price:'172.63', chg:'-1.2%', up:false},
+      {name:'AAPL', sub:'NASDAQ', symbol:'AAPL',  price:'…', chg:'…', up:true},
+      {name:'MSFT', sub:'NASDAQ', symbol:'MSFT',  price:'…', chg:'…', up:true},
+      {name:'GOOGL',sub:'NASDAQ', symbol:'GOOGL', price:'…', chg:'…', up:true},
+      {name:'NVDA', sub:'NASDAQ', symbol:'NVDA',  price:'…', chg:'…', up:true},
+      {name:'TSLA', sub:'NASDAQ', symbol:'TSLA',  price:'…', chg:'…', up:true},
     ]
   },
   crypto: {
     subtitle: 'Crypto Markets · Binance/Global', currency: '$',
     portVal: '$4,320', portChg: '▲ +$214 today', pnl: '+$214',
     indices: [
-      {name:'BTC/USDT',   val:'67,482.30', chg:'+2.4%', up:true},
-      {name:'ETH/USDT',   val:'3,542.80',  chg:'+1.8%', up:true},
-      {name:'BNB/USDT',   val:'578.40',    chg:'-0.5%', up:false},
-      {name:'TOTAL MCAP', val:'$2.48T',    chg:'+1.9%', up:true},
+      {name:'BTC/USD', symbol:'BTC-USD', val:'…', chg:'…', up:true},
+      {name:'ETH/USD', symbol:'ETH-USD', val:'…', chg:'…', up:true},
+      {name:'BNB/USD', symbol:'BNB-USD', val:'…', chg:'…', up:true},
+      {name:'SOL/USD', symbol:'SOL-USD', val:'…', chg:'…', up:true},
     ],
     stocks: [
-      {name:'BTC',   sub:'Bitcoin',  price:'67,482', chg:'+2.4%', up:true},
-      {name:'ETH',   sub:'Ethereum', price:'3,542',  chg:'+1.8%', up:true},
-      {name:'SOL',   sub:'Solana',   price:'172.80', chg:'+4.2%', up:true},
-      {name:'ADA',   sub:'Cardano',  price:'0.584',  chg:'-1.1%', up:false},
-      {name:'MATIC', sub:'Polygon',  price:'0.812',  chg:'+3.3%', up:true},
+      {name:'BTC',   sub:'Bitcoin',  symbol:'BTC-USD',  price:'…', chg:'…', up:true},
+      {name:'ETH',   sub:'Ethereum', symbol:'ETH-USD',  price:'…', chg:'…', up:true},
+      {name:'SOL',   sub:'Solana',   symbol:'SOL-USD',  price:'…', chg:'…', up:true},
+      {name:'ADA',   sub:'Cardano',  symbol:'ADA-USD',  price:'…', chg:'…', up:true},
+      {name:'MATIC', sub:'Polygon',  symbol:'POL-USD',  price:'…', chg:'…', up:true},
     ]
   }
 };
+
+// ────────────────────────────────────────────────────────────────
+//  REAL-TIME PRICE FETCHER
+// ────────────────────────────────────────────────────────────────
+async function fetchQuote(symbol) {
+  try {
+    const res  = await fetch(`/api/quote?symbol=${encodeURIComponent(symbol)}`);
+    const data = await res.json();
+    const meta = data?.chart?.result?.[0]?.meta;
+    if (!meta) return null;
+    const price    = meta.regularMarketPrice;
+    const prev     = meta.chartPreviousClose || meta.previousClose || price;
+    const changePct = ((price - prev) / prev * 100);
+    return {
+      price: price.toLocaleString('en-IN', {maximumFractionDigits: 2}),
+      chg:   (changePct >= 0 ? '+' : '') + changePct.toFixed(2) + '%',
+      up:    changePct >= 0
+    };
+  } catch(e) { return null; }
+}
+
+async function fetchAllPrices() {
+  // Show a subtle "refreshing" indicator
+  const dot = document.querySelector('.status-dot');
+  if (dot) dot.style.background = '#B8720A';
+
+  const allSymbols = [];
+  for (const mkt of Object.values(MARKETS)) {
+    for (const item of [...mkt.indices, ...mkt.stocks]) {
+      allSymbols.push(item);
+    }
+  }
+
+  // Fetch all in parallel
+  await Promise.all(allSymbols.map(async (item) => {
+    const q = await fetchQuote(item.symbol);
+    if (q) {
+      item.price = q.price;
+      item.val   = q.price;
+      item.chg   = q.chg;
+      item.up    = q.up;
+    }
+  }));
+
+  // Re-render whichever panels are visible
+  renderMarketLists();
+  renderDashboard();
+
+  // Green dot = live
+  if (dot) dot.style.background = '#2D9E5F';
+
+  // Show last updated time in topbar
+  const now = new Date();
+  const timeStr = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+  const liveLabel = document.querySelector('.topbar-right span');
+  if (liveLabel) liveLabel.innerHTML = `<span style="font-size:11px;color:var(--text3)">Updated ${timeStr}</span>`;
+}
+
+// Auto-refresh every 30 seconds
+function startPriceFeed() {
+  fetchAllPrices();
+  setInterval(fetchAllPrices, 30000);
+}
 
 // ════════════════════════════════════════════════════════════════
 //  NAVIGATION
@@ -1347,6 +1410,7 @@ window.addEventListener('DOMContentLoaded', () => {
   renderMarketLists();
   renderAlerts();
   setTimeout(initEquityChart, 150);
+  startPriceFeed(); // ← fetches real prices, then refreshes every 30s
 });
 </script>
 </body>
